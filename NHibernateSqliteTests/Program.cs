@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentNHibernate;
+﻿using FluentNHibernate;
 using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
 using FluentNHibernate.Conventions;
@@ -20,7 +15,7 @@ namespace NHibernateSqliteTests
         private static void Main(string[] args)
         {
             NHibernateConfig config = new NHibernateConfig();
-            config.Session.Save(new Customer {Name = "ioio"});
+            config.Session.Save(new Customer { Name = "ioio" });
             config.Session.Flush();
         }
     }
@@ -47,18 +42,13 @@ namespace NHibernateSqliteTests
             var SessionSource = new SessionSource(nhConfig);
             Session = SessionSource.CreateSession();
             SessionSource.BuildSchema(Session);
-
-            // run the deployment script
-            var deploymentScriptQuery = Session.CreateSQLQuery("ALTER TABLE hibernate_unique_key ADD COLUMN TableKey VARCHAR(255); INSERT INTO hibernate_unique_key (TableKey, next_hi) values ('Document', 1);");
-            deploymentScriptQuery.ExecuteUpdate();    
-        }        
+        }
     }
 
     public class IdGenerationConvention : IIdConvention
     {
         public void Apply(IIdentityInstance instance)
         {
-            var where = string.Format("TableKey = '{0}'", instance.EntityType.Name);
             instance.GeneratedBy.HiLo("1000");
         }
     }
@@ -75,6 +65,14 @@ namespace NHibernateSqliteTests
         {
             Id(x => x.Id);
             Map(x => x.Name);
+        }
+    }
+
+    public class DomainIdGenerationConvention : IIdConvention
+    {
+        public void Apply(IIdentityInstance instance)
+        {
+            instance.GeneratedBy.Increment();
         }
     }
 }
